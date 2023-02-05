@@ -1,0 +1,74 @@
+version: '3.8'
+services:
+  database:
+    container_name: influxdb
+    image: influx_image
+    restart: always
+    ports:
+      - "8086:8086"
+    env_file:
+      - services/influx/.env
+    build:
+      context: .
+      dockerfile: services/influx/dockerfile
+    networks:
+      default:
+        aliases:
+          - influxdb
+
+  broker: 
+    container_name: rabbit
+    image: rabbit_image
+    restart: always
+    ports: 
+    - "1883:1883"
+    - "15672:15672"
+    - "5672:5672"
+    build: 
+      context: .
+      dockerfile: services/rabbit/dockerfile
+    networks:
+        default:
+          aliases:
+            - rabbit
+
+  visualizador: 
+    container_name: grafana
+    image: grafana_image
+    restart: always
+    ports: 
+    - "3000:3000"
+    build: 
+      context: .
+      dockerfile: services/grafana/dockerfile
+  
+  telegraf:
+    container_name: telegraf
+    image: telegraf_image
+    restart: always
+    build:
+      context: .
+      dockerfile: services/telegraf/dockerfile
+    depends_on:
+      - database
+      - broker
+    links: 
+      - database
+  
+  analitica:
+    container_name: analitica
+    image: analitica_image
+    restart: always
+    build:
+      context: .
+      dockerfile: services/analitica/dockerfile
+    depends_on:
+      - database
+      - broker
+    links:
+      - database
+
+  
+
+
+    
